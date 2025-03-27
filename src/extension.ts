@@ -170,7 +170,7 @@ export async function activate(context: vscode.ExtensionContext) {
             try {
                 const response = await aiService.generateCode(`Explain this code:\n${text}`);
                 chatView.show();
-                chatView.addMessage(response.text);
+                chatView.addMessage(response.text, 'assistant');
             } catch (error) {
                 vscode.window.showErrorMessage('Failed to explain code: ' + error);
             }
@@ -205,7 +205,7 @@ export async function activate(context: vscode.ExtensionContext) {
             try {
                 const results = await premiumFeatures.searchCodebase(query);
                 chatView.show();
-                chatView.addMessage(`Search results for "${query}":\n\n${results.map(r => `File: ${r.file}\nRelevance: ${(r.relevance * 100).toFixed(1)}%\n\n${r.content}\n---\n`).join('\n')}`);
+                chatView.addMessage(`Search results for "${query}":\n\n${results.map(r => `File: ${r.file}\nRelevance: ${(r.relevance * 100).toFixed(1)}%\n\n${r.content}\n---\n`).join('\n')}`, 'assistant');
             } catch (error) {
                 vscode.window.showErrorMessage('Failed to search codebase: ' + error);
             }
@@ -219,7 +219,7 @@ export async function activate(context: vscode.ExtensionContext) {
             try {
                 const results = await premiumFeatures.webSearch(query);
                 chatView.show();
-                chatView.addMessage(`Web search results for "${query}":\n\n${results.map(r => `${r.title}\n${r.url}\n${r.snippet}\n---\n`).join('\n')}`);
+                chatView.addMessage(`Web search results for "${query}":\n\n${results.map(r => `${r.title}\n${r.url}\n${r.snippet}\n---\n`).join('\n')}`, 'assistant');
             } catch (error) {
                 vscode.window.showErrorMessage('Failed to search web: ' + error);
             }
@@ -233,7 +233,7 @@ export async function activate(context: vscode.ExtensionContext) {
             try {
                 const results = await premiumFeatures.searchDocumentation(query);
                 chatView.show();
-                chatView.addMessage(`Documentation results for "${query}":\n\n${results.map(r => `${r.title}\n${r.url}\n${r.content}\n---\n`).join('\n')}`);
+                chatView.addMessage(`Documentation results for "${query}":\n\n${results.map(r => `${r.title}\n${r.url}\n${r.content}\n---\n`).join('\n')}`, 'assistant');
             } catch (error) {
                 vscode.window.showErrorMessage('Failed to search documentation: ' + error);
             }
@@ -253,7 +253,7 @@ export async function activate(context: vscode.ExtensionContext) {
             try {
                 const analysis = await premiumFeatures.analyzeImage(imagePath[0].fsPath);
                 chatView.show();
-                chatView.addMessage(`Image Analysis:\n\n${analysis}`);
+                chatView.addMessage(`Image Analysis:\n\n${analysis}`, 'assistant');
             } catch (error) {
                 vscode.window.showErrorMessage('Failed to analyze image: ' + error);
             }
