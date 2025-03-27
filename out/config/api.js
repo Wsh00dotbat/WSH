@@ -27,6 +27,8 @@ exports.APIConfigManager = void 0;
 const vscode = __importStar(require("vscode"));
 class APIConfigManager {
     constructor() {
+        this.MAX_RETRIES = 3;
+        this.RETRY_DELAY = 1000; // 1 second
         this.config = this.loadConfig();
     }
     static getInstance() {
@@ -35,24 +37,65 @@ class APIConfigManager {
         }
         return APIConfigManager.instance;
     }
+    async retryOperation(operation, retries = this.MAX_RETRIES) {
+        let lastError;
+        for (let i = 0; i < retries; i++) {
+            try {
+                return await operation();
+            }
+            catch (error) {
+                lastError = error;
+                if (i < retries - 1) {
+                    await new Promise(resolve => setTimeout(resolve, this.RETRY_DELAY));
+                }
+            }
+        }
+        throw lastError;
+    }
+    validateApiKey(apiKey) {
+        return typeof apiKey === 'string' && apiKey.length > 0;
+    }
+    validateModel(model, validModels) {
+        return validModels.includes(model);
+    }
     loadConfig() {
         const config = vscode.workspace.getConfiguration('projectmind');
+        const anthropicModel = config.get('anthropic.model') || 'claude-3-sonnet-20240229';
+        const openaiModel = config.get('openai.model') || 'gpt-4-turbo-preview';
+        const deepseekModel = config.get('deepseek.model') || 'deepseek-coder-33b-instruct';
+        const geminiModel = config.get('gemini.model') || 'gemini-pro';
+        const validAnthropicModels = ['claude-3-opus-20240229', 'claude-3-sonnet-20240229', 'claude-3-haiku-20240307'];
+        const validOpenAIModels = ['gpt-4-turbo-preview', 'gpt-3.5-turbo'];
+        const validDeepSeekModels = ['deepseek-coder-33b-instruct', 'deepseek-chat'];
+        const validGeminiModels = ['gemini-pro', 'gemini-pro-vision'];
+        if (!this.validateModel(anthropicModel, validAnthropicModels)) {
+            throw new Error(`Invalid Anthropic model: ${anthropicModel}`);
+        }
+        if (!this.validateModel(openaiModel, validOpenAIModels)) {
+            throw new Error(`Invalid OpenAI model: ${openaiModel}`);
+        }
+        if (!this.validateModel(deepseekModel, validDeepSeekModels)) {
+            throw new Error(`Invalid DeepSeek model: ${deepseekModel}`);
+        }
+        if (!this.validateModel(geminiModel, validGeminiModels)) {
+            throw new Error(`Invalid Gemini model: ${geminiModel}`);
+        }
         return {
             anthropic: {
                 apiKey: config.get('anthropic.apiKey') || '',
-                model: config.get('anthropic.model') || 'claude-3-sonnet-20240229'
+                model: anthropicModel
             },
             openai: {
                 apiKey: config.get('openai.apiKey') || '',
-                model: config.get('openai.model') || 'gpt-4-turbo-preview'
+                model: openaiModel
             },
             deepseek: {
                 apiKey: config.get('deepseek.apiKey') || '',
-                model: config.get('deepseek.model') || 'deepseek-coder-33b-instruct'
+                model: deepseekModel
             },
             gemini: {
                 apiKey: config.get('gemini.apiKey') || '',
-                model: config.get('gemini.model') || 'gemini-pro'
+                model: geminiModel
             }
         };
     }
@@ -60,22 +103,53 @@ class APIConfigManager {
         return this.config;
     }
     async updateConfig(newConfig) {
-        const config = vscode.workspace.getConfiguration('projectmind');
-        await config.update('anthropic.apiKey', newConfig.anthropic?.apiKey, true);
-        await config.update('anthropic.model', newConfig.anthropic?.model, true);
-        await config.update('openai.apiKey', newConfig.openai?.apiKey, true);
-        await config.update('openai.model', newConfig.openai?.model, true);
-        await config.update('deepseek.apiKey', newConfig.deepseek?.apiKey, true);
-        await config.update('deepseek.model', newConfig.deepseek?.model, true);
-        await config.update('gemini.apiKey', newConfig.gemini?.apiKey, true);
-        await config.update('gemini.model', newConfig.gemini?.model, true);
-        this.config = this.loadConfig();
+        try {
+            const config = vscode.workspace.getConfiguration('projectmind');
+            // Validate API keys
+            if (newConfig.anthropic?.apiKey && !this.validateApiKey(newConfig.anthropic.apiKey)) {
+                throw new Error('Invalid Anthropic API key');
+            }
+            if (newConfig.openai?.apiKey && !this.validateApiKey(newConfig.openai.apiKey)) {
+                throw new Error('Invalid OpenAI API key');
+            }
+            if (newConfig.deepseek?.apiKey && !this.validateApiKey(newConfig.deepseek.apiKey)) {
+                throw new Error('Invalid DeepSeek API key');
+            }
+            if (newConfig.gemini?.apiKey && !this.validateApiKey(newConfig.gemini.apiKey)) {
+                throw new Error('Invalid Gemini API key');
+            }
+            // Update configuration with retry mechanism
+            await this.retryOperation(async () => {
+                if (newConfig.anthropic) {
+                    await config.update('anthropic.apiKey', newConfig.anthropic.apiKey, true);
+                    await config.update('anthropic.model', newConfig.anthropic.model, true);
+                }
+                if (newConfig.openai) {
+                    await config.update('openai.apiKey', newConfig.openai.apiKey, true);
+                    await config.update('openai.model', newConfig.openai.model, true);
+                }
+                if (newConfig.deepseek) {
+                    await config.update('deepseek.apiKey', newConfig.deepseek.apiKey, true);
+                    await config.update('deepseek.model', newConfig.deepseek.model, true);
+                }
+                if (newConfig.gemini) {
+                    await config.update('gemini.apiKey', newConfig.gemini.apiKey, true);
+                    await config.update('gemini.model', newConfig.gemini.model, true);
+                }
+            });
+            this.config = this.loadConfig();
+        }
+        catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+            vscode.window.showErrorMessage(`Failed to update configuration: ${errorMessage}`);
+            throw error;
+        }
     }
     validateConfig() {
-        return !!(this.config.anthropic.apiKey &&
-            this.config.openai.apiKey &&
-            this.config.deepseek.apiKey &&
-            this.config.gemini.apiKey);
+        return !!(this.validateApiKey(this.config.anthropic.apiKey) &&
+            this.validateApiKey(this.config.openai.apiKey) &&
+            this.validateApiKey(this.config.deepseek.apiKey) &&
+            this.validateApiKey(this.config.gemini.apiKey));
     }
 }
 exports.APIConfigManager = APIConfigManager;

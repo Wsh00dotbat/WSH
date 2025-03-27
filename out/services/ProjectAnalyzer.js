@@ -33,75 +33,47 @@ class ProjectAnalyzer {
     constructor() {
         this.analysis = null;
         this.analysisInProgress = false;
+        this.CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+        this.CACHE_SIZE = 100;
+        this.PAGE_SIZE = 20;
+        this.cache = new Map();
         this.project = new ts_morph_1.Project();
     }
-    async analyzeProject(rootPath) {
-        this.analysisInProgress = true;
-        try {
-            // Get all source files
-            const files = glob.sync('**/*.{ts,js,py,java,cpp,cs}', {
-                cwd: rootPath,
-                ignore: ['**/node_modules/**', '**/dist/**', '**/build/**']
-            });
-            // Analyze project structure
-            const structure = await this.analyzeStructure(rootPath, files);
-            // Analyze architecture
-            const architecture = await this.analyzeArchitecture(files);
-            // Calculate metrics
-            const metrics = await this.calculateMetrics(files);
-            this.analysis = {
-                structure,
-                architecture,
-                metrics
-            };
-            return this.analysis;
-        }
-        finally {
-            this.analysisInProgress = false;
+    clearOldCache() {
+        const now = Date.now();
+        for (const [key, entry] of this.cache.entries()) {
+            if (now - entry.timestamp > this.CACHE_DURATION) {
+                this.cache.delete(key);
+            }
         }
     }
-    async updateAnalysis(changedFile) {
-        if (!this.analysis) {
-            return;
+    getCachedAnalysis(rootPath) {
+        this.clearOldCache();
+        const entry = this.cache.get(rootPath);
+        if (entry && Date.now() - entry.timestamp <= this.CACHE_DURATION) {
+            return entry.data;
         }
-        // Update the analysis for the changed file
-        const fileContent = fs.readFileSync(changedFile, 'utf-8');
-        const relativePath = path.relative(vscode.workspace.workspaceFolders[0].uri.fsPath, changedFile);
-        // Update metrics
-        this.analysis.metrics.totalLines += fileContent.split('\n').length;
-        // Update dependencies
-        const dependencies = await this.analyzeDependencies(changedFile);
-        this.analysis.structure.dependencies.set(relativePath, dependencies);
+        return null;
     }
-    async getArchitecture() {
-        if (!this.analysis) {
-            throw new Error('Project not analyzed yet');
+    cacheAnalysis(rootPath, analysis) {
+        if (this.cache.size >= this.CACHE_SIZE) {
+            const oldestKey = Array.from(this.cache.entries())
+                .sort(([, a], [, b]) => a.timestamp - b.timestamp)[0][0];
+            this.cache.delete(oldestKey);
         }
-        return this.analysis.architecture;
+        this.cache.set(rootPath, {
+            timestamp: Date.now(),
+            data: analysis
+        });
     }
-    async findRelatedFiles(filePath) {
-        if (!this.analysis) {
-            throw new Error('Project not analyzed yet');
-        }
-        const dependencies = this.analysis.structure.dependencies.get(filePath) || [];
-        const dependents = Array.from(this.analysis.structure.dependencies.entries())
-            .filter(([_, deps]) => deps.includes(filePath))
-            .map(([file]) => file);
-        return [...new Set([...dependencies, ...dependents])];
-    }
-    async getProjectInsights() {
-        if (!this.analysis) {
-            throw new Error('Project not analyzed yet');
-        }
-        return `Project Insights:
-- Total Files: ${this.analysis.metrics.totalFiles}
-- Total Lines: ${this.analysis.metrics.totalLines}
-- Complexity: ${this.analysis.metrics.complexity}
-- Components: ${this.analysis.architecture.components.length}
-- Relationships: ${this.analysis.architecture.relationships.length}`;
-    }
-    isAnalysisInProgress() {
-        return this.analysisInProgress;
+    async getWorkspaceFiles(rootPath, page = 1) {
+        const files = glob.sync('**/*.{ts,js,py,java,cpp,cs}', {
+            cwd: rootPath,
+            ignore: ['**/node_modules/**', '**/dist/**', '**/build/**']
+        });
+        const start = (page - 1) * this.PAGE_SIZE;
+        const end = start + this.PAGE_SIZE;
+        return files.slice(start, end);
     }
     async analyzeStructure(rootPath, files) {
         const directories = new Set();
@@ -187,6 +159,87 @@ class ProjectAnalyzer {
             console.error(`Error analyzing dependencies for ${filePath}:`, error);
             return [];
         }
+    }
+    async analyzeProject(rootPath, page = 1) {
+        if (this.analysisInProgress) {
+            throw new Error('Analysis already in progress');
+        }
+        // Check cache first
+        const cachedAnalysis = this.getCachedAnalysis(rootPath);
+        if (cachedAnalysis) {
+            return cachedAnalysis;
+        }
+        this.analysisInProgress = true;
+        try {
+            // Get paginated source files
+            const files = await this.getWorkspaceFiles(rootPath, page);
+            // Analyze project structure
+            const structure = await this.analyzeStructure(rootPath, files);
+            // Analyze architecture
+            const architecture = await this.analyzeArchitecture(files);
+            // Calculate metrics
+            const metrics = await this.calculateMetrics(files);
+            this.analysis = {
+                structure,
+                architecture,
+                metrics
+            };
+            // Cache the analysis
+            this.cacheAnalysis(rootPath, this.analysis);
+            return this.analysis;
+        }
+        finally {
+            this.analysisInProgress = false;
+        }
+    }
+    getAnalysis() {
+        return this.analysis;
+    }
+    clearCache() {
+        this.cache.clear();
+    }
+    async updateAnalysis(changedFile) {
+        if (!this.analysis) {
+            return;
+        }
+        // Update the analysis for the changed file
+        const fileContent = fs.readFileSync(changedFile, 'utf-8');
+        const relativePath = path.relative(vscode.workspace.workspaceFolders[0].uri.fsPath, changedFile);
+        // Update metrics
+        this.analysis.metrics.totalLines += fileContent.split('\n').length;
+        // Update dependencies
+        const dependencies = await this.analyzeDependencies(changedFile);
+        this.analysis.structure.dependencies.set(relativePath, dependencies);
+    }
+    async getArchitecture() {
+        if (!this.analysis) {
+            throw new Error('Project not analyzed yet');
+        }
+        return this.analysis.architecture;
+    }
+    async findRelatedFiles(filePath) {
+        if (!this.analysis) {
+            throw new Error('Project not analyzed yet');
+        }
+        const dependencies = this.analysis.structure.dependencies.get(filePath) || [];
+        const dependents = Array.from(this.analysis.structure.dependencies.entries())
+            .filter(([_, deps]) => deps.includes(filePath))
+            .map(([file]) => file);
+        return [...new Set([...dependencies, ...dependents])];
+    }
+    async getProjectInsights() {
+        if (!this.analysis) {
+            throw new Error('Project not analyzed yet');
+        }
+        return `Project Insights:
+- Total Files: ${this.analysis.metrics.totalFiles}
+- Total Lines: ${this.analysis.metrics.totalLines}
+- Complexity: ${this.analysis.metrics.complexity}
+- Components: ${this.analysis.architecture.components.length}
+- Relationships: ${this.analysis.architecture.relationships.length}`;
+    }
+    isAnalysisInProgress() {
+        return this.analysisInProgress;
     }
 }
 exports.ProjectAnalyzer = ProjectAnalyzer;
