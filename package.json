@@ -201,145 +201,145 @@
         "command": "projectmind.analyzeProject",
         "key": "ctrl+shift+a",
         "mac": "cmd+shift+a",
-        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+        "when": "editorTextFocus"
       },
       {
         "command": "projectmind.showDependencies",
         "key": "ctrl+shift+d",
         "mac": "cmd+shift+d",
-        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+        "when": "editorTextFocus"
       },
       {
         "command": "projectmind.showArchitecture",
         "key": "ctrl+shift+r",
         "mac": "cmd+shift+r",
-        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+        "when": "editorTextFocus"
       },
       {
         "command": "projectmind.findRelatedFiles",
         "key": "ctrl+shift+f",
         "mac": "cmd+shift+f",
-        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+        "when": "editorTextFocus"
       },
       {
         "command": "projectmind.showInsights",
         "key": "ctrl+shift+i",
         "mac": "cmd+shift+i",
-        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+        "when": "editorTextFocus"
       },
       {
         "command": "projectmind.generateCode",
         "key": "ctrl+shift+g",
         "mac": "cmd+shift+g",
-        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+        "when": "editorTextFocus"
       },
       {
         "command": "projectmind.optimizeCode",
         "key": "ctrl+shift+o",
         "mac": "cmd+shift+o",
-        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+        "when": "editorTextFocus"
       },
       {
         "command": "projectmind.explainCode",
         "key": "ctrl+shift+e",
         "mac": "cmd+shift+e",
-        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+        "when": "editorTextFocus"
       },
       {
         "command": "projectmind.fixCode",
         "key": "ctrl+shift+x",
         "mac": "cmd+shift+x",
-        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+        "when": "editorTextFocus"
       },
       {
         "command": "projectmind.searchCodebase",
         "key": "ctrl+shift+s",
         "mac": "cmd+shift+s",
-        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+        "when": "editorTextFocus"
       },
       {
         "command": "projectmind.webSearch",
         "key": "ctrl+shift+w",
         "mac": "cmd+shift+w",
-        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+        "when": "editorTextFocus"
       },
       {
         "command": "projectmind.searchDocs",
         "key": "ctrl+shift+h",
         "mac": "cmd+shift+h",
-        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+        "when": "editorTextFocus"
       },
       {
         "command": "projectmind.analyzeImage",
         "key": "ctrl+shift+m",
         "mac": "cmd+shift+m",
-        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+        "when": "editorTextFocus"
       },
       {
         "command": "projectmind.fixError",
         "key": "ctrl+shift+.",
         "mac": "cmd+shift+.",
-        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+        "when": "editorTextFocus"
       },
       {
         "command": "projectmind.predictCursor",
         "key": "ctrl+shift+p",
         "mac": "cmd+shift+p",
-        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+        "when": "editorTextFocus"
       },
       {
         "command": "projectmind.smartCursorJump",
         "key": "ctrl+shift+j",
         "mac": "cmd+shift+j",
-        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+        "when": "editorTextFocus"
       },
       {
         "command": "projectmind.selectSmartRange",
         "key": "ctrl+shift+l",
         "mac": "cmd+shift+l",
-        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+        "when": "editorTextFocus"
       },
       {
         "command": "projectmind.cursorHistory",
         "key": "ctrl+shift+y",
         "mac": "cmd+shift+y",
-        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+        "when": "editorTextFocus"
       },
       {
         "command": "projectmind.startAgent",
         "key": "ctrl+shift+k",
         "mac": "cmd+shift+k",
-        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+        "when": "editorTextFocus"
       },
       {
         "command": "projectmind.runCommand",
         "key": "ctrl+shift+;",
         "mac": "cmd+shift+;",
-        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+        "when": "editorTextFocus"
       },
       {
         "command": "projectmind.smartRewrite",
         "key": "ctrl+shift+t",
         "mac": "cmd+shift+t",
-        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+        "when": "editorTextFocus"
       },
       {
         "command": "projectmind.openChat",
         "key": "ctrl+shift+c",
         "mac": "cmd+shift+c",
-        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+        "when": "editorTextFocus"
       },
       {
         "command": "projectmind.openSettings",
         "key": "ctrl+shift+,",
         "mac": "cmd+shift+,",
-        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+        "when": "editorTextFocus"
       },
       {
         "command": "projectmind.openCodebase",
         "key": "ctrl+shift+b",
         "mac": "cmd+shift+b",
-        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+        "when": "editorTextFocus"
       }
     ],
     "configuration": {
