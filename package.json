@@ -1,0 +1,400 @@
+{
+  "name": "projectmind",
+  "displayName": "ProjectMind",
+  "description": "AI-powered project understanding and navigation for large codebases",
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/projectmind"
+  },
+  "engines": {
+    "vscode": "^1.98.2"
+  },
+  "categories": [
+    "Visualization",
+    "Machine Learning",
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:projectmind.analyzeProject",
+    "onCommand:projectmind.showDependencies",
+    "onCommand:projectmind.showArchitecture",
+    "onCommand:projectmind.findRelatedFiles",
+    "onCommand:projectmind.showInsights",
+    "onCommand:projectmind.generateCode",
+    "onCommand:projectmind.optimizeCode",
+    "onCommand:projectmind.explainCode",
+    "onCommand:projectmind.fixCode",
+    "onCommand:projectmind.searchCodebase",
+    "onCommand:projectmind.webSearch",
+    "onCommand:projectmind.searchDocs",
+    "onCommand:projectmind.analyzeImage",
+    "onCommand:projectmind.fixError",
+    "onCommand:projectmind.predictCursor",
+    "onCommand:projectmind.smartCursorJump",
+    "onCommand:projectmind.selectSmartRange",
+    "onCommand:projectmind.cursorHistory",
+    "onCommand:projectmind.startAgent",
+    "onCommand:projectmind.runCommand",
+    "onCommand:projectmind.smartRewrite",
+    "onCommand:projectmind.openChat",
+    "onCommand:projectmind.openSettings",
+    "onCommand:projectmind.openCodebase"
+  ],
+  "main": "./out/extension.js",
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.98.2",
+    "@types/glob": "^7.1.3",
+    "@types/node": "^14.14.37",
+    "@typescript-eslint/eslint-plugin": "^4.19.0",
+    "@typescript-eslint/parser": "^4.19.0",
+    "eslint": "^7.23.0",
+    "typescript": "^4.2.3"
+  },
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "projectmind",
+          "title": "ProjectMind",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "projectmind": [
+        {
+          "id": "projectmind.insights",
+          "name": "Project Insights",
+          "type": "webview"
+        },
+        {
+          "id": "projectmind.dependencies",
+          "name": "Dependencies",
+          "type": "webview"
+        },
+        {
+          "id": "projectmind.architecture",
+          "name": "Architecture",
+          "type": "webview"
+        },
+        {
+          "id": "projectmind.chat",
+          "name": "AI Chat",
+          "type": "webview"
+        },
+        {
+          "id": "projectmind.codebase",
+          "name": "Codebase",
+          "type": "webview"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "projectmind.analyzeProject",
+        "title": "ProjectMind: Analyze Project"
+      },
+      {
+        "command": "projectmind.showDependencies",
+        "title": "ProjectMind: Show Dependencies"
+      },
+      {
+        "command": "projectmind.showArchitecture",
+        "title": "ProjectMind: Show Architecture"
+      },
+      {
+        "command": "projectmind.findRelatedFiles",
+        "title": "ProjectMind: Find Related Files"
+      },
+      {
+        "command": "projectmind.showInsights",
+        "title": "ProjectMind: Show Insights"
+      },
+      {
+        "command": "projectmind.generateCode",
+        "title": "ProjectMind: Generate Code"
+      },
+      {
+        "command": "projectmind.optimizeCode",
+        "title": "ProjectMind: Optimize Code"
+      },
+      {
+        "command": "projectmind.explainCode",
+        "title": "ProjectMind: Explain Code"
+      },
+      {
+        "command": "projectmind.fixCode",
+        "title": "ProjectMind: Fix Code"
+      },
+      {
+        "command": "projectmind.searchCodebase",
+        "title": "ProjectMind: Search Codebase"
+      },
+      {
+        "command": "projectmind.webSearch",
+        "title": "ProjectMind: Web Search"
+      },
+      {
+        "command": "projectmind.searchDocs",
+        "title": "ProjectMind: Search Documentation"
+      },
+      {
+        "command": "projectmind.analyzeImage",
+        "title": "ProjectMind: Analyze Image"
+      },
+      {
+        "command": "projectmind.fixError",
+        "title": "ProjectMind: Fix Error"
+      },
+      {
+        "command": "projectmind.predictCursor",
+        "title": "ProjectMind: Predict Cursor Movement"
+      },
+      {
+        "command": "projectmind.smartCursorJump",
+        "title": "ProjectMind: Smart Cursor Jump"
+      },
+      {
+        "command": "projectmind.selectSmartRange",
+        "title": "ProjectMind: Select Smart Range"
+      },
+      {
+        "command": "projectmind.cursorHistory",
+        "title": "ProjectMind: Show Cursor History"
+      },
+      {
+        "command": "projectmind.startAgent",
+        "title": "ProjectMind: Start AI Agent"
+      },
+      {
+        "command": "projectmind.runCommand",
+        "title": "ProjectMind: Run Command"
+      },
+      {
+        "command": "projectmind.smartRewrite",
+        "title": "ProjectMind: Smart Rewrite"
+      },
+      {
+        "command": "projectmind.openChat",
+        "title": "ProjectMind: Open Chat"
+      },
+      {
+        "command": "projectmind.openSettings",
+        "title": "ProjectMind: Open Settings"
+      },
+      {
+        "command": "projectmind.openCodebase",
+        "title": "ProjectMind: Open Codebase"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "projectmind.analyzeProject",
+        "key": "ctrl+shift+a",
+        "mac": "cmd+shift+a",
+        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "projectmind.showDependencies",
+        "key": "ctrl+shift+d",
+        "mac": "cmd+shift+d",
+        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "projectmind.showArchitecture",
+        "key": "ctrl+shift+r",
+        "mac": "cmd+shift+r",
+        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "projectmind.findRelatedFiles",
+        "key": "ctrl+shift+f",
+        "mac": "cmd+shift+f",
+        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "projectmind.showInsights",
+        "key": "ctrl+shift+i",
+        "mac": "cmd+shift+i",
+        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "projectmind.generateCode",
+        "key": "ctrl+shift+g",
+        "mac": "cmd+shift+g",
+        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "projectmind.optimizeCode",
+        "key": "ctrl+shift+o",
+        "mac": "cmd+shift+o",
+        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "projectmind.explainCode",
+        "key": "ctrl+shift+e",
+        "mac": "cmd+shift+e",
+        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "projectmind.fixCode",
+        "key": "ctrl+shift+x",
+        "mac": "cmd+shift+x",
+        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "projectmind.searchCodebase",
+        "key": "ctrl+shift+s",
+        "mac": "cmd+shift+s",
+        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "projectmind.webSearch",
+        "key": "ctrl+shift+w",
+        "mac": "cmd+shift+w",
+        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "projectmind.searchDocs",
+        "key": "ctrl+shift+h",
+        "mac": "cmd+shift+h",
+        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "projectmind.analyzeImage",
+        "key": "ctrl+shift+m",
+        "mac": "cmd+shift+m",
+        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "projectmind.fixError",
+        "key": "ctrl+shift+.",
+        "mac": "cmd+shift+.",
+        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "projectmind.predictCursor",
+        "key": "ctrl+shift+p",
+        "mac": "cmd+shift+p",
+        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "projectmind.smartCursorJump",
+        "key": "ctrl+shift+j",
+        "mac": "cmd+shift+j",
+        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "projectmind.selectSmartRange",
+        "key": "ctrl+shift+l",
+        "mac": "cmd+shift+l",
+        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "projectmind.cursorHistory",
+        "key": "ctrl+shift+y",
+        "mac": "cmd+shift+y",
+        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "projectmind.startAgent",
+        "key": "ctrl+shift+k",
+        "mac": "cmd+shift+k",
+        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "projectmind.runCommand",
+        "key": "ctrl+shift+;",
+        "mac": "cmd+shift+;",
+        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "projectmind.smartRewrite",
+        "key": "ctrl+shift+t",
+        "mac": "cmd+shift+t",
+        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "projectmind.openChat",
+        "key": "ctrl+shift+c",
+        "mac": "cmd+shift+c",
+        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "projectmind.openSettings",
+        "key": "ctrl+shift+,",
+        "mac": "cmd+shift+,",
+        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "projectmind.openCodebase",
+        "key": "ctrl+shift+b",
+        "mac": "cmd+shift+b",
+        "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+      }
+    ],
+    "configuration": {
+      "title": "ProjectMind",
+      "properties": {
+        "projectmind.analysisDepth": {
+          "type": "number",
+          "default": 3,
+          "description": "Depth of project analysis"
+        },
+        "projectmind.maxFileSize": {
+          "type": "number",
+          "default": 1000000,
+          "description": "Maximum file size to analyze (in bytes)"
+        },
+        "projectmind.ignorePatterns": {
+          "type": "array",
+          "default": ["**/node_modules/**", "**/dist/**", "**/build/**"],
+          "description": "Patterns to ignore during analysis"
+        },
+        "projectmind.analysisInterval": {
+          "type": "number",
+          "default": 300,
+          "description": "Interval between project analyses (in seconds)"
+        },
+        "projectmind.agentMode": {
+          "type": "string",
+          "default": "fast",
+          "enum": ["fast", "slow"],
+          "description": "AI agent mode"
+        },
+        "projectmind.fastRequestsPerDay": {
+          "type": "number",
+          "default": 100,
+          "description": "Number of fast requests allowed per day"
+        },
+        "projectmind.ui": {
+          "type": "object",
+          "default": {
+            "theme": "dark",
+            "fontSize": 14,
+            "showLineNumbers": true,
+            "wordWrap": true,
+            "showTokenCount": true
+          },
+          "description": "UI settings"
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "ts-morph": "^12.0.0",
+    "glob": "^7.1.7",
+    "axios": "^1.6.0",
+    "marked": "^9.0.0",
+    "highlight.js": "^11.9.0"
+  }
+}
