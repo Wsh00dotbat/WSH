@@ -21,97 +21,63 @@ interface ProjectAnalysis {
     };
 }
 
+interface CacheEntry {
+    timestamp: number;
+    data: ProjectAnalysis;
+}
+
 export class ProjectAnalyzer {
     private project: Project;
     private analysis: ProjectAnalysis | null = null;
     private analysisInProgress: boolean = false;
+    private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+    private readonly CACHE_SIZE = 100;
+    private readonly PAGE_SIZE = 20;
+    private cache: Map<string, CacheEntry> = new Map();
 
     constructor() {
         this.project = new Project();
     }
 
-    public async analyzeProject(rootPath: string): Promise<ProjectAnalysis> {
-        this.analysisInProgress = true;
-        try {
-            // Get all source files
-            const files = glob.sync('**/*.{ts,js,py,java,cpp,cs}', {
-                cwd: rootPath,
-                ignore: ['**/node_modules/**', '**/dist/**', '**/build/**']
-            });
-
-            // Analyze project structure
-            const structure = await this.analyzeStructure(rootPath, files);
-            
-            // Analyze architecture
-            const architecture = await this.analyzeArchitecture(files);
-            
-            // Calculate metrics
-            const metrics = await this.calculateMetrics(files);
-
-            this.analysis = {
-                structure,
-                architecture,
-                metrics
-            };
-
-            return this.analysis;
-        } finally {
-            this.analysisInProgress = false;
+    private clearOldCache(): void {
+        const now = Date.now();
+        for (const [key, entry] of this.cache.entries()) {
+            if (now - entry.timestamp > this.CACHE_DURATION) {
+                this.cache.delete(key);
+            }
         }
     }
 
-    public async updateAnalysis(changedFile: string): Promise<void> {
-        if (!this.analysis) {
-            return;
+    private getCachedAnalysis(rootPath: string): ProjectAnalysis | null {
+        this.clearOldCache();
+        const entry = this.cache.get(rootPath);
+        if (entry && Date.now() - entry.timestamp <= this.CACHE_DURATION) {
+            return entry.data;
         }
-
-        // Update the analysis for the changed file
-        const fileContent = fs.readFileSync(changedFile, 'utf-8');
-        const relativePath = path.relative(vscode.workspace.workspaceFolders![0].uri.fsPath, changedFile);
-        
-        // Update metrics
-        this.analysis.metrics.totalLines += fileContent.split('\n').length;
-        
-        // Update dependencies
-        const dependencies = await this.analyzeDependencies(changedFile);
-        this.analysis.structure.dependencies.set(relativePath, dependencies);
+        return null;
     }
 
-    public async getArchitecture(): Promise<ProjectAnalysis['architecture']> {
-        if (!this.analysis) {
-            throw new Error('Project not analyzed yet');
+    private cacheAnalysis(rootPath: string, analysis: ProjectAnalysis): void {
+        if (this.cache.size >= this.CACHE_SIZE) {
+            const oldestKey = Array.from(this.cache.entries())
+                .sort(([, a], [, b]) => a.timestamp - b.timestamp)[0][0];
+            this.cache.delete(oldestKey);
         }
-        return this.analysis.architecture;
+        this.cache.set(rootPath, {
+            timestamp: Date.now(),
+            data: analysis
+        });
     }
 
-    public async findRelatedFiles(filePath: string): Promise<string[]> {
-        if (!this.analysis) {
-            throw new Error('Project not analyzed yet');
-        }
+    private async getWorkspaceFiles(rootPath: string, page: number = 1): Promise<string[]> {
+        const files = glob.sync('**/*.{ts,js,py,java,cpp,cs}', {
+            cwd: rootPath,
+            ignore: ['**/node_modules/**', '**/dist/**', '**/build/**']
+        });
 
-        const dependencies = this.analysis.structure.dependencies.get(filePath) || [];
-        const dependents = Array.from(this.analysis.structure.dependencies.entries())
-            .filter(([_, deps]) => deps.includes(filePath))
-            .map(([file]) => file);
-
-        return [...new Set([...dependencies, ...dependents])];
-    }
-
-    public async getProjectInsights(): Promise<string> {
-        if (!this.analysis) {
-            throw new Error('Project not analyzed yet');
-        }
-
-        return `Project Insights:
-- Total Files: ${this.analysis.metrics.totalFiles}
-- Total Lines: ${this.analysis.metrics.totalLines}
-- Complexity: ${this.analysis.metrics.complexity}
-- Components: ${this.analysis.architecture.components.length}
-- Relationships: ${this.analysis.architecture.relationships.length}`;
-    }
-
-    public isAnalysisInProgress(): boolean {
-        return this.analysisInProgress;
+        const start = (page - 1) * this.PAGE_SIZE;
+        const end = start + this.PAGE_SIZE;
+        return files.slice(start, end);
     }
 
     private async analyzeStructure(rootPath: string, files: string[]): Promise<ProjectAnalysis['structure']> {
@@ -212,5 +178,107 @@ export class ProjectAnalyzer {
             console.error(`Error analyzing dependencies for ${filePath}:`, error);
             return [];
         }
+    }
+
+    public async analyzeProject(rootPath: string, page: number = 1): Promise<ProjectAnalysis> {
+        if (this.analysisInProgress) {
+            throw new Error('Analysis already in progress');
+        }
+
+        // Check cache first
+        const cachedAnalysis = this.getCachedAnalysis(rootPath);
+        if (cachedAnalysis) {
+            return cachedAnalysis;
+        }
+
+        this.analysisInProgress = true;
+        try {
+            // Get paginated source files
+            const files = await this.getWorkspaceFiles(rootPath, page);
+
+            // Analyze project structure
+            const structure = await this.analyzeStructure(rootPath, files);
+            
+            // Analyze architecture
+            const architecture = await this.analyzeArchitecture(files);
+            
+            // Calculate metrics
+            const metrics = await this.calculateMetrics(files);
+
+            this.analysis = {
+                structure,
+                architecture,
+                metrics
+            };
+
+            // Cache the analysis
+            this.cacheAnalysis(rootPath, this.analysis);
+
+            return this.analysis;
+        } finally {
+            this.analysisInProgress = false;
+        }
+    }
+
+    public getAnalysis(): ProjectAnalysis | null {
+        return this.analysis;
+    }
+
+    public clearCache(): void {
+        this.cache.clear();
+    }
+
+    public async updateAnalysis(changedFile: string): Promise<void> {
+        if (!this.analysis) {
+            return;
+        }
+
+        // Update the analysis for the changed file
+        const fileContent = fs.readFileSync(changedFile, 'utf-8');
+        const relativePath = path.relative(vscode.workspace.workspaceFolders![0].uri.fsPath, changedFile);
+        
+        // Update metrics
+        this.analysis.metrics.totalLines += fileContent.split('\n').length;
+        
+        // Update dependencies
+        const dependencies = await this.analyzeDependencies(changedFile);
+        this.analysis.structure.dependencies.set(relativePath, dependencies);
+    }
+
+    public async getArchitecture(): Promise<ProjectAnalysis['architecture']> {
+        if (!this.analysis) {
+            throw new Error('Project not analyzed yet');
+        }
+        return this.analysis.architecture;
+    }
+
+    public async findRelatedFiles(filePath: string): Promise<string[]> {
+        if (!this.analysis) {
+            throw new Error('Project not analyzed yet');
+        }
+
+        const dependencies = this.analysis.structure.dependencies.get(filePath) || [];
+        const dependents = Array.from(this.analysis.structure.dependencies.entries())
+            .filter(([_, deps]) => deps.includes(filePath))
+            .map(([file]) => file);
+
+        return [...new Set([...dependencies, ...dependents])];
+    }
+
+    public async getProjectInsights(): Promise<string> {
+        if (!this.analysis) {
+            throw new Error('Project not analyzed yet');
+        }
+
+        return `Project Insights:
+- Total Files: ${this.analysis.metrics.totalFiles}
+- Total Lines: ${this.analysis.metrics.totalLines}
+- Complexity: ${this.analysis.metrics.complexity}
+- Components: ${this.analysis.architecture.components.length}
+- Relationships: ${this.analysis.architecture.relationships.length}`;
+    }
+
+    public isAnalysisInProgress(): boolean {
+        return this.analysisInProgress;
     }
 } 

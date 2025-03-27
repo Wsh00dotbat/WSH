@@ -36,7 +36,7 @@ class APIConfigManager {
         return APIConfigManager.instance;
     }
     loadConfig() {
-        const config = vscode.workspace.getConfiguration('wsh');
+        const config = vscode.workspace.getConfiguration('projectmind');
         return {
             anthropic: {
                 apiKey: config.get('anthropic.apiKey') || '',
@@ -60,7 +60,7 @@ class APIConfigManager {
         return this.config;
     }
     async updateConfig(newConfig) {
-        const config = vscode.workspace.getConfiguration('wsh');
+        const config = vscode.workspace.getConfiguration('projectmind');
         await config.update('anthropic.apiKey', newConfig.anthropic?.apiKey, true);
         await config.update('anthropic.model', newConfig.anthropic?.model, true);
         await config.update('openai.apiKey', newConfig.openai?.apiKey, true);

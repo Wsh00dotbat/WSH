@@ -219,13 +219,13 @@ class SettingsView {
                     <div class="setting-item">
                         <label for="agent-mode">Agent Mode</label>
                         <select id="agent-mode">
-                            <option value="fast" ${vscode.workspace.getConfiguration('wsh').get('agentMode') === 'fast' ? 'selected' : ''}>Fast</option>
-                            <option value="slow" ${vscode.workspace.getConfiguration('wsh').get('agentMode') === 'slow' ? 'selected' : ''}>Slow</option>
+                            <option value="fast" ${vscode.workspace.getConfiguration('projectmind').get('agentMode') === 'fast' ? 'selected' : ''}>Fast</option>
+                            <option value="slow" ${vscode.workspace.getConfiguration('projectmind').get('agentMode') === 'slow' ? 'selected' : ''}>Slow</option>
                         </select>
                     </div>
                     <div class="setting-item">
                         <label for="fast-requests">Fast Requests per Day</label>
-                        <input type="number" id="fast-requests" value="${vscode.workspace.getConfiguration('wsh').get('fastRequestsPerDay')}" />
+                        <input type="number" id="fast-requests" value="${vscode.workspace.getConfiguration('projectmind').get('fastRequestsPerDay')}" />
                     </div>
                 </div>
 
